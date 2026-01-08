@@ -11,10 +11,11 @@ description: 扫描项目生成配置（CLAUDE.md/restart.sh/ignore/Docker）
 | 1 | `.claude/CLAUDE.md` | 项目配置 | 直接生成 |
 | 2 | `restart.sh` | 前后端打包+启动脚本 | `templates/restart-*.sh.tmpl` |
 | 3 | `.claudeignore` | Claude Code 忽略 | `templates/claudeignore.tmpl` |
-| 4 | `.gitignore` | Git 忽略 | `templates/gitignore-*.tmpl` |
-| 5 | `.dockerignore` | Docker 忽略 | `templates/dockerignore.tmpl` |
-| 6 | `Dockerfile` | 容器构建 | `templates/Dockerfile-*.tmpl` |
-| 7 | `docker-compose.yml` | 容器编排 | `templates/docker-compose-*.yml.tmpl` |
+| 4 | `.geminiignore` | Gemini CLI 忽略 | 与 `.claudeignore` 内容相同 |
+| 5 | `.gitignore` | Git 忽略 | `templates/gitignore-*.tmpl` |
+| 6 | `.dockerignore` | Docker 忽略 | `templates/dockerignore.tmpl` |
+| 7 | `Dockerfile` | 容器构建 | `templates/Dockerfile-*.tmpl` |
+| 8 | `docker-compose.yml` | 容器编排 | `templates/docker-compose-*.yml.tmpl` |
 
 ---
 
@@ -50,7 +51,7 @@ description: 扫描项目生成配置（CLAUDE.md/restart.sh/ignore/Docker）
 **数据库**: [检测结果]
 **前后端分离**: [是/否]
 
-即将生成 7 个文件，是否继续？[Y/n]
+即将生成 8 个文件，是否继续？[Y/n]
 ```
 
 ### 步骤 3：逐个生成文件
@@ -96,6 +97,7 @@ chmod +x restart.sh
 ✅ .claude/CLAUDE.md
 ✅ restart.sh
 ✅ .claudeignore
+✅ .geminiignore
 ✅ .gitignore
 ✅ .dockerignore
 ✅ Dockerfile
