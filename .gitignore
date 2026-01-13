@@ -13,3 +13,4 @@ out/
 /.geminiignore
 
 .DS_Store
+publish.sh

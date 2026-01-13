@@ -1,7 +1,7 @@
 # AI 编码助手配置中心
 
-版本：v1.2
-更新：2026-01-12
+版本：v1.0
+更新：2026-01-13
 作者：wwj
 
 > 本项目是 **配置模板仓库**，用于开发和维护 AI 编码助手的用户级配置。
@@ -34,6 +34,22 @@
 - Claude Code 只读取 `~/.claude/`，不读取 `~/.gemini/`
 - Gemini CLI 只读取 `~/.gemini/`，不读取 `~/.claude/`
 - 配置内容可能相似（如禁止行为、技术栈偏好），但这不是重复，而是各自需要的独立配置
+
+### 配置能力差异
+
+| 特性 | Claude Code | Gemini CLI |
+|------|-------------|------------|
+| 主配置文件 | `.claude/CLAUDE.md` | `.gemini/GEMINI.md` |
+| 规则目录 | `.claude/rules/` ✅ | 不支持 ❌ |
+| 技能目录 | `.claude/skills/` ✅ | 不支持 ❌ |
+| 命令目录 | `.claude/commands/` (.md) | `.gemini/commands/` (.toml) |
+| 命令格式 | Markdown | TOML |
+
+**规则同步方式**：
+- Claude Code：规则拆分到 `rules/` 目录，按文件组织
+- Gemini CLI：所有规则必须写在 `GEMINI.md` 一个文件中
+
+> 如需在两个工具间同步规则（如禁止行尾注释），需分别在 `.claude/rules/bash-style.md` 和 `.gemini/GEMINI.md` 中维护。
 
 ---
 
@@ -90,10 +106,9 @@ cp .gemini/settings.json ~/.gemini/
 | 规则 | 作用 | 触发场景 |
 |------|------|---------|
 | `claude-code-defensive.md` | 防止测试篡改、过度工程化、中途放弃 | 始终生效 |
-| `ops-safety.md` | 危险命令确认、回滚方案、风险提示 | 执行系统命令时 |
+| `ops-safety.md` | 危险命令确认、回滚方案、风险提示 | 始终生效（详细规范见 skills） |
 | `doc-sync.md` | 配置/结构变更时提醒更新文档 | 修改配置时 |
-| `bash-style.md` | Bash 编写规范：tee 写入、heredoc 引号 | 操作 .sh/.md/Dockerfile 等 |
-| `lsp-usage.md` | LSP 自动调用规则、调用声明格式 | 查找定义/引用时 |
+| `bash-style.md` | Bash 核心规范：禁止行尾注释 | 始终生效（详细规范见 skills） |
 
 **效果示例**：
 - Claude 不会修改测试来适配错误代码
@@ -112,6 +127,8 @@ cp .gemini/settings.json ~/.gemini/
 | `java-dev` | 操作 `.java` 文件 | 命名约定、异常处理、Spring 规范、日志规范 |
 | `frontend-dev` | 操作 `.vue/.tsx/.css` 等 | UI 风格约束、Vue/React 规范、TypeScript |
 | `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
+| `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
+| `ops-safety` | 执行系统命令、服务器运维 | 风险说明、回滚方案、问题排查原则 |
 
 **效果示例**：
 - 写 Go 代码时，自动遵循 Effective Go 规范
@@ -226,17 +243,18 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 ```
 .claude/
 ├── CLAUDE.md                     # 核心配置：身份、偏好、技术栈
-├── rules/                        # 规则：始终加载
+├── rules/                        # 规则：始终加载（精简版）
 │   ├── claude-code-defensive.md  # 防御性规则
-│   ├── ops-safety.md             # 运维安全
+│   ├── ops-safety.md             # 运维安全（核心）
 │   ├── doc-sync.md               # 文档同步
-│   ├── bash-style.md             # Bash 编写规范
-│   └── lsp-usage.md              # LSP 使用规则
-├── skills/                       # 技能：按需加载
+│   └── bash-style.md             # Bash 核心规范
+├── skills/                       # 技能：按需加载（完整版）
 │   ├── go-dev/
 │   ├── java-dev/
 │   ├── frontend-dev/
-│   └── python-dev/
+│   ├── python-dev/
+│   ├── bash-style/               # Bash 完整规范
+│   └── ops-safety/               # 运维安全完整规范
 └── commands/                     # 命令：显式调用
     ├── fix.md
     ├── code-review.md
@@ -252,6 +270,21 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 | **Rules** | 始终加载 | 自动生效 | 核心约束、防御规则 |
 | **Skills** | 按需加载 | 根据文件类型自动触发 | 语言规范、领域知识 |
 | **Commands** | 调用时加载 | 用户输入 `/命令名` | 明确的工作流任务 |
+
+### Rules 与 Skills 的关键区别
+
+> **重要**：Rules 的 `paths` frontmatter 只是语义提示，**不影响加载**。
+
+| 特性 | Rules | Skills |
+|------|-------|--------|
+| 加载时机 | 每次对话启动时**全部加载** | 启动时仅加载名称和描述 |
+| 内容加载 | 完整内容立即加载 | 匹配时才加载完整内容 |
+| `paths` 作用 | 条件应用（不节省 tokens） | N/A |
+| Token 消耗 | 始终消耗 | 按需消耗 |
+
+**最佳实践**：
+- Rules 保持精简（核心禁止项），详细规范放 Skills
+- 例如 `bash-style`：rules 放 37 行核心规则，skills 放 200+ 行完整规范
 
 ### 设计理念
 

@@ -431,8 +431,13 @@
 
 ### 注释规范
 
-- ❌ 禁止行尾注释（如 `int x = 1; // 这是注释`）
+- ❌ **禁止行尾注释**（如 `int x = 1; // 这是注释`）
 - ✅ 注释应独占一行，放在代码上方
+
+**此规则适用于所有场景，包括**：
+- 源代码文件（.js/.ts/.go/.java 等）
+- Markdown 文档中的代码块
+- 配置文件中的示例代码
 
 ```javascript
 // ❌ 错误
@@ -441,6 +446,21 @@ const maxRetry = 3; // 最大重试次数
 // ✅ 正确
 // 最大重试次数
 const maxRetry = 3;
+```
+
+**Bash 代码块特别强调**：
+
+```bash
+# ❌ 错误：行尾注释
+curl -X POST https://api.example.com/data # 发送请求
+docker run -d nginx # 启动容器
+
+# ✅ 正确：注释独占一行
+# 发送请求
+curl -X POST https://api.example.com/data
+
+# 启动容器
+docker run -d nginx
 ```
 
 ### 语言要求
