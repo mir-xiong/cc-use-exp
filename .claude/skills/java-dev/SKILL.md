@@ -206,12 +206,12 @@ log.debug("Finding user by id: " + userId);
 
 ## 详细参考
 
-完整规范见 `references/java-style.md`，包含：
-- 完整命名约定和示例
-- 详细异常处理模式
-- Spring Boot 最佳实践
-- 并发编程详解
-- 性能优化工具使用
+| 文件 | 内容 |
+|------|------|
+| `references/java-style.md` | 命名约定、异常处理、Spring Boot、测试规范 |
+| `references/collections.md` | 不可变集合（Guava）、字符串分割 |
+| `references/concurrency.md` | 线程池配置、CompletableFuture 超时 |
+| `references/code-patterns.md` | 卫语句、枚举优化、策略工厂模式 |
 
 ---
 

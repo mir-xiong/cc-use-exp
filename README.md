@@ -1,11 +1,40 @@
+<div align="center">
+
 # AI 编码助手配置中心
 
-版本：v1.0
-更新：2026-01-13
-作者：wwj
+<!-- 封面图 -->
+<img src="./cover.svg" alt="AI 编码助手配置中心" width="100%" style="max-width: 800px" />
 
-> 本项目是 **配置模板仓库**，用于开发和维护 AI 编码助手的用户级配置。
-> 按费力度从低到高排序，让你用最少的操作获得最大的帮助。
+> 让 Claude Code 和 Gemini CLI 开箱即用的配置模板
+>
+> 按费力度从低到高，用最少操作获得最大帮助
+
+[![version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/doccker/cc-use-exp)
+[![license](https://img.shields.io/badge/license-Custom-green.svg)](./LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Config-orange.svg)](https://docs.anthropic.com/claude-code)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-Config-purple.svg)](https://github.com/google-gemini/gemini-cli)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/doccker/cc-use-exp/pulls)
+
+</div>
+
+---
+
+<details>
+<summary><strong>📑 目录导航</strong></summary>
+
+- [项目定位](#项目定位)
+- [快速部署](#快速部署)
+- **Part 1: Claude Code**
+  - [快速开始](#1-快速开始)
+  - [常见场景速查](#2-常见场景速查)
+  - [目录结构](#5-目录结构)
+- **Part 2: Gemini CLI**
+  - [快速开始](#1-快速开始-1)
+  - [前端场景速查](#2-前端场景速查)
+- [社区与支持](#社区与支持)
+- [许可声明](#许可声明)
+
+</details>
 
 ---
 
@@ -124,7 +153,7 @@ cp .gemini/settings.json ~/.gemini/
 | 技能 | 触发条件 | 提供的帮助 |
 |------|---------|-----------|
 | `go-dev` | 操作 `.go` 文件 | 命名约定、错误处理、并发编程、测试规范 |
-| `java-dev` | 操作 `.java` 文件 | 命名约定、异常处理、Spring 规范、日志规范 |
+| `java-dev` | 操作 `.java` 文件 | 命名约定、异常处理、Spring 规范、不可变集合、线程池、代码模式 |
 | `frontend-dev` | 操作 `.vue/.tsx/.css` 等 | UI 风格约束、Vue/React 规范、TypeScript |
 | `python-dev` | 操作 `.py` 文件 | 类型注解、Pydantic、pytest、uv 工具链 |
 | `bash-style` | 操作 `.sh/Dockerfile/Makefile/.md` 等 | 注释规范、tee 写入、heredoc、脚本规范 |
@@ -777,6 +806,19 @@ cp .gemini/settings.json ~/.gemini/
 
 ---
 
+## 社区与支持
+
+### GitHub
+
+- [Issues](https://github.com/doccker/cc-use-exp/issues) - 报告问题
+- [Pull Requests](https://github.com/doccker/cc-use-exp/pulls) - 贡献代码
+
+### 联系作者
+
+- Email: doccker@pm.me
+
+---
+
 ## 许可声明
 
 本项目采用自定义许可条款：
@@ -788,9 +830,5 @@ cp .gemini/settings.json ~/.gemini/
 | **转载/二次开发** | 需注明出处并保留许可声明 |
 
 未经授权的商业使用，作者保留追究法律责任的权利。
-
-**联系方式**：doccker@pm.me
-
-欢迎提出想法和优化建议，助力开源事业！
 
 详见 [LICENSE](./LICENSE)
