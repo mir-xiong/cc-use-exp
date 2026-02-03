@@ -1,84 +1,28 @@
 # /ruanzhu - 软著源代码DOCX生成
 
-生成符合软件著作权申请要求的源代码DOCX文件。
-
-## 用法
-
-```
-/ruanzhu [软件名称] [页数]
-```
-
-## 参数
-
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| 软件名称 | 软件全称，如"贸易订单管理系统" | 自动检测 |
-| 页数 | 目标页数，或 `auto` 表示自动(前30+后30) | 60 |
-
-## 示例
+**立即执行以下命令，不做任何检测、搜索或判断：**
 
 ```bash
-# 自动检测项目信息，生成60页
-/ruanzhu
-
-# 指定软件名称
-/ruanzhu "智能仓储管理系统 V1.0"
-
-# 指定页数
-/ruanzhu "智能仓储管理系统 V1.0" 80
-
-# 自动模式（前30页+后30页，不足60页全部输出）
-/ruanzhu "智能仓储管理系统 V1.0" auto
+cp ~/.claude/templates/ruanzhu/generate_docx.py ./generate_docx.py && python3 generate_docx.py $ARGUMENTS && rm generate_docx.py
 ```
 
-## 执行流程
+## 参数映射
 
-1. **检测项目信息**
-   - 读取 `.claude/CLAUDE.md` 或项目根目录 `CLAUDE.md`
-   - 读取 `package.json`（name + version）
-   - 读取 `pom.xml`（artifactId + version）
-   - 以上都没有则提示用户输入
+| 用户输入 | $ARGUMENTS |
+|---------|-----------|
+| `/ruanzhu` | （空） |
+| `/ruanzhu "名称"` | `--name "名称"` |
+| `/ruanzhu "名称" 80` | `--name "名称" --pages 80` |
+| `/ruanzhu "名称" auto` | `--name "名称" --pages auto` |
 
-2. **确认页数策略**
-   - 默认60页
-   - 用户可指定具体页数
-   - `auto` 模式：代码量不足60页输出全部，超过则前30+后30
+## 禁止事项
 
-3. **扫描源代码**
-   - 自动检测项目语言
-   - 按优先级扫描目录
-   - 排除测试代码和生成文件
+- ❌ 检测 python-docx 是否安装
+- ❌ 搜索项目中的文件
+- ❌ 执行项目中已有的任何脚本
+- ❌ 创建 venv 或手动安装依赖
+- ❌ 自行编写生成逻辑
 
-4. **生成DOCX**
-   - 创建 `docs/ruanzhu/` 目录
-   - 复制并执行生成脚本
-   - 输出文件：`{软件名称}-源代码.docx`
+## 唯一允许的操作
 
-## 输出格式
-
-- 页面：A4
-- 字体：宋体 + Courier New, 10pt
-- 页眉：左侧"软件名称 V1.0"（加粗），右侧"第X页共Y页"，带下划线
-- 页脚：居中"第X页"
-- 每页：约54-57行代码
-
-## 支持的语言
-
-| 语言 | 扩展名 | 排除模式 |
-|------|--------|---------|
-| Java | `.java` | `*Test.java`, `*IT.java` |
-| TypeScript/Vue | `.ts`, `.tsx`, `.vue` | `*.spec.ts`, `*.test.ts`, `*.d.ts` |
-| C++ | `.cpp`, `.hpp`, `.h`, `.cc` | `*_test.cpp` |
-| Ruby | `.rb` | `*_spec.rb`, `*_test.rb` |
-| Rust | `.rs` | `tests/` 目录 |
-| Go | `.go` | `*_test.go` |
-| Python | `.py` | `test_*.py`, `*_test.py` |
-
-## 依赖
-
-- Python 3.8+
-- python-docx 库（脚本会自动创建虚拟环境安装）
-
-## 相关技能
-
-- `ruanzhu` - 详细的代码扫描和生成逻辑
+✅ 执行上面的 bash 命令（一条命令，用 && 连接）

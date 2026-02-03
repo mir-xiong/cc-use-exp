@@ -22,7 +22,6 @@
 依赖：python-docx（会自动创建虚拟环境安装）
 """
 
-import os
 import re
 import sys
 import math
@@ -129,7 +128,7 @@ DOCX_CONFIG = {
     'font_size_pt': 10,
     'font_cn': '宋体',
     'font_en': 'Courier New',
-    'lines_per_page': 57,
+    'lines_per_page': 54,
 }
 
 
@@ -139,22 +138,28 @@ def ensure_docx_lib():
         import docx
         return True
     except ImportError:
-        print("python-docx 未安装，正在创建虚拟环境...")
-        venv_path = Path(__file__).parent / '.venv'
-        if not venv_path.exists():
-            subprocess.run([sys.executable, '-m', 'venv', str(venv_path)], check=True)
+        print("python-docx 未安装，正在安装...")
 
-        pip_path = venv_path / 'bin' / 'pip'
-        if not pip_path.exists():
-            pip_path = venv_path / 'Scripts' / 'pip.exe'
+        # 尝试直接 pip install
+        result = subprocess.run(
+            [sys.executable, '-m', 'pip', 'install', 'python-docx', '-q'],
+            capture_output=True,
+        )
 
-        subprocess.run([str(pip_path), 'install', 'python-docx', '-q'], check=True)
+        if result.returncode == 0:
+            return True
 
-        # 重新执行脚本
-        python_path = venv_path / 'bin' / 'python'
-        if not python_path.exists():
-            python_path = venv_path / 'Scripts' / 'python.exe'
-        os.execv(str(python_path), [str(python_path)] + sys.argv)
+        # macOS Homebrew Python 需要使用 --break-system-packages
+        if b'externally-managed-environment' in result.stderr:
+            print("检测到 Homebrew Python，使用 --break-system-packages 安装...")
+            subprocess.run(
+                [sys.executable, '-m', 'pip', 'install', 'python-docx', '-q', '--break-system-packages'],
+                check=True,
+            )
+            return True
+
+        # 其他错误则抛出
+        raise RuntimeError(f"安装 python-docx 失败: {result.stderr.decode()}")
 
 
 def detect_project_languages(project_root):
@@ -390,15 +395,17 @@ def generate_docx(lines, output_path, software_name, version, is_split=False, to
         p.clear()
     p = header.paragraphs[0]
 
-    # 页眉段落属性
+    # 页眉段落属性 - 设置居中Tab
     pPr = p._element.get_or_add_pPr()
     tabs = OxmlElement('w:tabs')
-    tab = OxmlElement('w:tab')
-    tab.set(qn('w:val'), 'right')
-    tab.set(qn('w:pos'), '8640')
-    tabs.append(tab)
+    # 居中Tab位置：可用宽度15.5cm的中心 = 7.75cm ≈ 4394 twips
+    tab_center = OxmlElement('w:tab')
+    tab_center.set(qn('w:val'), 'center')
+    tab_center.set(qn('w:pos'), '4394')
+    tabs.append(tab_center)
     pPr.append(tabs)
 
+    # 页眉下划线
     pBdr = OxmlElement('w:pBdr')
     bottom = OxmlElement('w:bottom')
     bottom.set(qn('w:val'), 'single')
@@ -415,37 +422,51 @@ def generate_docx(lines, output_path, software_name, version, is_split=False, to
     run1.font.bold = True
     run1._element.rPr.rFonts.set(qn('w:eastAsia'), cfg['font_cn'])
 
-    # Tab
+    # Tab 到居中位置
     run_tab = p.add_run()
     tab_elem = OxmlElement('w:tab')
     run_tab._element.append(tab_elem)
 
-    # 右侧页码
-    def add_field(para, field_code):
+    # 居中页码 - 添加域代码（带占位文本）
+    def add_field_with_text(para, field_code, placeholder="1"):
+        """添加 Word 域代码，包含占位文本以确保正确渲染"""
         run = para.add_run()
         fldChar1 = OxmlElement('w:fldChar')
         fldChar1.set(qn('w:fldCharType'), 'begin')
         run._element.append(fldChar1)
+
         run2 = para.add_run()
         instrText = OxmlElement('w:instrText')
         instrText.set(qn('xml:space'), 'preserve')
         instrText.text = f" {field_code} "
         run2._element.append(instrText)
+
         run3 = para.add_run()
         fldChar2 = OxmlElement('w:fldChar')
-        fldChar2.set(qn('w:fldCharType'), 'end')
+        fldChar2.set(qn('w:fldCharType'), 'separate')
         run3._element.append(fldChar2)
+
+        # 占位文本（Word打开时会自动更新为实际值）
+        run4 = para.add_run(placeholder)
+        run4.font.name = cfg['font_en']
+        run4.font.size = Pt(cfg['font_size_pt'])
+        run4._element.rPr.rFonts.set(qn('w:eastAsia'), cfg['font_cn'])
+
+        run5 = para.add_run()
+        fldChar3 = OxmlElement('w:fldChar')
+        fldChar3.set(qn('w:fldCharType'), 'end')
+        run5._element.append(fldChar3)
 
     run2 = p.add_run("第 ")
     run2.font.name = cfg['font_en']
     run2.font.size = Pt(cfg['font_size_pt'])
     run2._element.rPr.rFonts.set(qn('w:eastAsia'), cfg['font_cn'])
-    add_field(p, "PAGE")
+    add_field_with_text(p, "PAGE", "1")
     run3 = p.add_run(" 页共 ")
     run3.font.name = cfg['font_en']
     run3.font.size = Pt(cfg['font_size_pt'])
     run3._element.rPr.rFonts.set(qn('w:eastAsia'), cfg['font_cn'])
-    add_field(p, "NUMPAGES")
+    add_field_with_text(p, "NUMPAGES", "1")
     run4 = p.add_run(" 页")
     run4.font.name = cfg['font_en']
     run4.font.size = Pt(cfg['font_size_pt'])
@@ -462,7 +483,7 @@ def generate_docx(lines, output_path, software_name, version, is_split=False, to
     run1.font.name = cfg['font_en']
     run1.font.size = Pt(cfg['font_size_pt'])
     run1._element.rPr.rFonts.set(qn('w:eastAsia'), cfg['font_cn'])
-    add_field(p, "PAGE")
+    add_field_with_text(p, "PAGE", "1")
     run2 = p.add_run(" 页")
     run2.font.name = cfg['font_en']
     run2.font.size = Pt(cfg['font_size_pt'])
