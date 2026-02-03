@@ -223,6 +223,7 @@ cp .gemini/settings.json ~/.gemini/
 | `/project-init` | 为新项目初始化 Claude Code 配置 | `/project-init` |
 | `/project-scan` | 扫描项目生成配置（CLAUDE.md/restart.sh/ignore/Docker） | `/project-scan` |
 | `/style-extract` | 从代码或设计图提取样式变量 | `/style-extract` |
+| `/ruanzhu` | 生成软著源代码 DOCX 文件 | `/ruanzhu "系统名称" 60` |
 | `/status` | 显示当前配置状态（Rules/Skills/LSP） | `/status` |
 
 ---
@@ -310,13 +311,17 @@ A: 在 `.claude/skills/` 下创建新目录（如 `rust-dev/`），添加 `SKILL
 │   ├── frontend-dev/
 │   ├── python-dev/
 │   ├── bash-style/               # Bash 完整规范
-│   └── ops-safety/               # 运维安全完整规范
-└── commands/                     # 命令：显式调用
-    ├── fix.md
-    ├── code-review.md
-    ├── debug.md
-    ├── status.md
-    └── ...
+│   ├── ops-safety/               # 运维安全完整规范
+│   └── ruanzhu/                  # 软著源代码生成
+├── commands/                     # 命令：显式调用
+│   ├── fix.md
+│   ├── code-review.md
+│   ├── debug.md
+│   ├── ruanzhu.md                # 软著源代码 DOCX 生成
+│   ├── status.md
+│   └── ...
+└── templates/                    # 模板文件
+    └── ruanzhu/                  # 软著生成脚本
 ```
 
 ### 核心概念

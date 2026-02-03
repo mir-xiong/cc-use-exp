@@ -28,10 +28,11 @@ description: 显示当前加载的配置状态
 - pyright: ✅ 可用 / ❌ 未安装
 
 ### Commands（可用命令）
-日常：/fix, /quick-review, /code-review, /debug
+日常：/fix, /quick-review, /code-review, /debug, /commit-msg
 开发：/new-feature, /security-review
-设计：/design-doc, /design-checklist, /requirement-doc
+设计：/design-doc, /design-checklist, /requirement-doc, /requirement-interrogate
 初始化：/project-init, /project-scan, /style-extract
+工具：/ruanzhu
 诊断：/status
 ```
 
