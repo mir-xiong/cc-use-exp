@@ -26,3 +26,10 @@ cp ~/.claude/templates/ruanzhu/generate_docx.py ./generate_docx.py && python3 ge
 ## 唯一允许的操作
 
 ✅ 执行上面的 bash 命令（一条命令，用 && 连接）
+
+## 说明
+
+脚本会自动：
+- 检测项目语言和源代码
+- 如果已有文档，询问用户是否生成不同内容
+- 生成符合软著要求的 DOCX 文件

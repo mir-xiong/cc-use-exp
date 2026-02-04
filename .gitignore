@@ -14,3 +14,5 @@ out/
 
 .DS_Store
 publish.sh
+
+.claude/tasks/

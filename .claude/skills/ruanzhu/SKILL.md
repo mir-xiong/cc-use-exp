@@ -1,7 +1,7 @@
 ---
 name: ruanzhu
 description: 当用户执行 /ruanzhu 命令或请求生成软著源代码文档时触发。提供软著源代码 DOCX 生成规范。
-version: v1.1
+version: v1.3
 ---
 
 # ruanzhu 技能 - 软著源代码DOCX生成
@@ -30,6 +30,7 @@ cp ~/.claude/templates/ruanzhu/generate_docx.py ./generate_docx.py && python3 ge
 ### 执行后状态
 
 - ✅ 生成 `docs/ruanzhu/{软件名称}{版本}-源代码.docx`
+- ✅ 使用 `--different` 时，生成 `{软件名称}{版本}-源代码-2.docx`（编号递增）
 - ✅ 项目中**不应有任何新增的 .py 文件**
 - ✅ 临时脚本 `./generate_docx.py` 已被删除
 

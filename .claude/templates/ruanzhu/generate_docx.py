@@ -162,6 +162,36 @@ def ensure_docx_lib():
         raise RuntimeError(f"安装 python-docx 失败: {result.stderr.decode()}")
 
 
+def find_existing_docx(output_dir):
+    """查找已有的 .docx 文件"""
+    if not output_dir.exists():
+        return []
+    return list(output_dir.glob('*-源代码*.docx'))
+
+
+def parse_used_files_from_docx(docx_path):
+    """从已有的 .docx 文件中解析已使用的文件列表"""
+    from docx import Document
+
+    used_files = set()
+    try:
+        doc = Document(docx_path)
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            # 匹配文件标识：/* ========== xxx.java ========== */ 或 // ==================== xxx.go ====================
+            if '==========' in text:
+                # 提取文件名
+                match = re.search(r'={5,}\s*(.+?)\s*={5,}', text)
+                if match:
+                    filename = match.group(1).strip()
+                    if filename:
+                        used_files.add(filename)
+    except Exception as e:
+        print(f"警告: 解析 {docx_path} 失败: {e}")
+
+    return used_files
+
+
 def detect_project_languages(project_root):
     """检测项目使用的语言"""
     detected = set()
@@ -550,6 +580,7 @@ def main():
     parser.add_argument('--version', '-v', default='V1.0', help='版本号 (默认: V1.0)')
     parser.add_argument('--pages', '-p', default='60', help='目标页数或auto (默认: 60)')
     parser.add_argument('--root', '-r', default='.', help='项目根目录 (默认: 当前目录)')
+    parser.add_argument('--different', '-d', action='store_true', help='生成与已有文档不同的内容')
     args = parser.parse_args()
 
     # 确保依赖
@@ -583,6 +614,44 @@ def main():
     print("扫描源代码文件...")
     source_files = collect_source_files(project_root, languages)
     print(f"找到 {len(source_files)} 个源文件")
+
+    # 检测已有文档
+    output_dir = project_root / 'docs' / 'ruanzhu'
+    existing_docs = find_existing_docx(output_dir)
+    used_files = set()
+    is_different_mode = args.different
+
+    # 如果有已有文档且未指定 --different，询问用户
+    if existing_docs and not is_different_mode:
+        print(f"\n检测到已有文档: {len(existing_docs)} 个")
+        for doc_path in existing_docs:
+            print(f"  - {doc_path.name}")
+        print("\n是否需要生成不同内容？（使用不同的源代码文件）")
+        print("  1. 是（生成 -源代码-2.docx）")
+        print("  2. 否（覆盖原文档）")
+        choice = input("请选择 [1/2]: ").strip()
+        if choice == '1':
+            is_different_mode = True
+            print("已选择: 生成不同内容\n")
+        else:
+            print("已选择: 覆盖原文档\n")
+
+    # 处理 --different 逻辑
+    if existing_docs and is_different_mode:
+        for doc_path in existing_docs:
+            doc_used = parse_used_files_from_docx(doc_path)
+            used_files.update(doc_used)
+
+        if used_files:
+            print(f"已使用文件: {len(used_files)} 个")
+            # 过滤掉已使用的文件
+            original_count = len(source_files)
+            source_files = [
+                (filename, lang, filepath)
+                for filename, lang, filepath in source_files
+                if filename not in used_files
+            ]
+            print(f"剩余可用文件: {len(source_files)} 个 (排除了 {original_count - len(source_files)} 个)")
 
     if not source_files:
         print("错误: 未找到源代码文件")
@@ -640,12 +709,23 @@ def main():
         total_pages = actual_pages
 
     # 创建输出目录
-    output_dir = project_root / 'docs' / 'ruanzhu'
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 生成文件名
     safe_name = re.sub(r'[<>:"/\\|?*]', '', software_name)
-    output_path = output_dir / f"{safe_name}{version}-源代码.docx"
+    base_name = f"{safe_name}{version}-源代码"
+
+    if is_different_mode and existing_docs:
+        # 查找已有的编号，生成下一个编号
+        existing_nums = [1]  # 原始文件算 1
+        for doc_path in existing_docs:
+            match = re.search(r'-源代码-(\d+)\.docx$', doc_path.name)
+            if match:
+                existing_nums.append(int(match.group(1)))
+        next_num = max(existing_nums) + 1
+        output_path = output_dir / f"{base_name}-{next_num}.docx"
+    else:
+        output_path = output_dir / f"{base_name}.docx"
 
     print(f"生成DOCX: {output_path}")
     generate_docx(lines, str(output_path), software_name, version, is_split, total_pages if is_split else 0)
