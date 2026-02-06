@@ -203,16 +203,59 @@ ADMIN_USER=myuser ADMIN_PASS=mypass ./restart.sh
 
 ## README.md 生成规范
 
-根据扫描结果生成完整的项目说明文档，包含以下章节：
+### ⚠️ 增量更新原则（重要）
 
-### 必须包含的章节
+**如果 README.md 已存在**，必须遵循以下规则：
+
+1. **读取现有内容**，识别 `<!-- AUTO:xxx -->` 标记的区块
+2. **只更新标记区块**内的内容，保留区块外的手写内容
+3. **无标记区块时**，询问用户：
+   ```
+   README.md 已存在且无自动更新标记。请选择：
+   1. 全量覆盖（推荐首次使用）
+   2. 追加标记区块到文件末尾
+   3. 跳过 README.md
+   ```
+
+### 可用的标记区块
+
+| 标记 | 内容 | 说明 |
+|------|------|------|
+| `<!-- AUTO:tech-stack -->` | 技术栈表格 | 自动检测语言、框架、数据库版本 |
+| `<!-- AUTO:directory -->` | 项目结构 | 扫描目录生成树形结构 |
+| `<!-- AUTO:quick-start -->` | 快速开始 | 环境要求、启动命令 |
+| `<!-- AUTO:docker -->` | Docker 部署 | docker-compose 命令 |
+
+### 标记区块格式
+
+```markdown
+<!-- AUTO:tech-stack -->
+## 技术栈
+| 层级 | 技术 | 版本 |
+|------|------|------|
+| 框架 | Gin | 1.9 |
+...
+<!-- /AUTO:tech-stack -->
+```
+
+### 更新逻辑
+
+```
+1. 读取现有 README.md
+2. 用正则匹配 <!-- AUTO:xxx --> ... <!-- /AUTO:xxx -->
+3. 替换匹配区块内的内容
+4. 保留区块外的所有手写内容
+5. 写回文件
+```
+
+### 首次生成的章节模板
 
 ```markdown
 # [项目名称]
 
 ## 项目概述
 
-[根据代码分析生成项目描述]
+<!-- 手写区域：根据代码分析生成项目描述 -->
 
 ### 核心功能
 
@@ -220,6 +263,7 @@ ADMIN_USER=myuser ADMIN_PASS=mypass ./restart.sh
 - **功能2**: 描述
 ...
 
+<!-- AUTO:tech-stack -->
 ## 技术栈
 
 ### 后端
@@ -241,7 +285,9 @@ ADMIN_USER=myuser ADMIN_PASS=mypass ./restart.sh
 | 语言 | TypeScript | [版本] |
 | UI 组件库 | [Element Plus/Ant Design/...] | [版本] |
 | 构建 | Vite | [版本] |
+<!-- /AUTO:tech-stack -->
 
+<!-- AUTO:directory -->
 ## 项目结构
 
 ```
@@ -250,7 +296,9 @@ ADMIN_USER=myuser ADMIN_PASS=mypass ./restart.sh
 ├── [目录2]/                # 说明
 └── ...
 ```
+<!-- /AUTO:directory -->
 
+<!-- AUTO:quick-start -->
 ## 快速开始
 
 ### 环境要求
@@ -283,22 +331,20 @@ npm run dev
 |------|------|
 | 前端 | http://localhost:[端口] |
 | 后端 API | http://localhost:[端口]/api |
+<!-- /AUTO:quick-start -->
 
+<!-- AUTO:docker -->
 ## Docker 部署
 
 ```bash
 # 启动
 docker-compose up -d
 ```
+<!-- /AUTO:docker -->
 
 ## 许可证
 
 [LICENSE](./LICENSE)
-
----
-
-**当前版本**: v1.0
-**最后更新**: [生成日期]
 ```
 
 ### 生成原则

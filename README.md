@@ -847,7 +847,7 @@ cp .gemini/settings.json ~/.gemini/
 
 ### 联系作者
 
-- Email: doccker@pm.me
+<img src="./wx-hao.png" alt="微信 wechat" width="400" />
 
 ---
 
